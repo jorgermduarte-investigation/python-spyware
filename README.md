@@ -1,8 +1,10 @@
 # python-spyware
 
 
-Requirements (Windows )
+Requirements (Windows)
 
-Execute the respective commands in a windows cmd.
+**Execute the respective commands in a windows cmd.**
+
 python -m pip install psutil
+
 python -m pip install requests
