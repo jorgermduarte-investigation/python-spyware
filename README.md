@@ -1,5 +1,6 @@
 # python-spyware
 
+Python version used : 2.7.15
 
 Requirements (Windows)
 
